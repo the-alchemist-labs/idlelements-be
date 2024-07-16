@@ -1,8 +1,6 @@
 export enum SocketEvent {
     Connection = "connection",
     Disconnect = "disconnect",
-    FriendRequest = 'friend_request',
-    TradeRequest = "trade_request",
 }
 
 export enum SocketResponseEvent {

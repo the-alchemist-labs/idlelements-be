@@ -9,6 +9,11 @@ export async function CreateFriendRequest(request: FriendRequest) {
     return FriendRequestModel.create(request);
 }
 
-export async function DeleteFriendRequest({ sender, recipient }: FriendRequest) {
-    return FriendRequestModel.deleteMany({ sender, recipient });
+export async function DeleteFriendRequest({ sender, recipient }: FriendRequest): Promise<void> {
+    await FriendRequestModel.deleteMany({ sender, recipient });
+}
+
+export async function isFriendRequestExists(sender: string, recipient: string): Promise<boolean> {
+    const friendRequest = FriendRequestModel.find({ recipient, sender });
+    return !!friendRequest;
 }

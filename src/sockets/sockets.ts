@@ -1,21 +1,19 @@
 
 import { Server, Socket } from 'socket.io';
-import { playerSchema } from "../types/Player";
 import * as playerFlows from '../flows/players';
 import { SocketEvent, SocketResponseEvent } from '../types/SocketEvents';
-import { sendFriendRequest } from '../flows/friends';
 import { ClientManager } from './clients';
+import { playerSocketConnectionSchema } from '../types/Player';
 
-export const initializeSockets = (io: Server) => {
+export let mySocket: Socket; 
+
+export function initializeSockets(io: Server) {
   io.on(SocketEvent.Connection, async socket => {
+    mySocket = socket;
     try {
       await registerPlayer(socket);
 
-      socket.on(SocketEvent.FriendRequest, data => {
-        sendFriendRequest(socket, data);
-      });
-
-      socket.on('disconnect', () => {
+      socket.on(SocketEvent.Disconnect, () => {
         ClientManager.removeClient(socket.id);
       });
 
@@ -26,12 +24,10 @@ export const initializeSockets = (io: Server) => {
   });
 };
 
-async function registerPlayer(socket: Socket) {
-  const parsedPlayer = playerSchema.parse(socket.handshake.query);
+async function registerPlayer(socket: Socket): Promise<void> {
+  const { playerId } = playerSocketConnectionSchema.parse(socket.handshake.query);
 
-  ClientManager.addClient(parsedPlayer.id, socket.id);
-  await playerFlows.registerPlayer(parsedPlayer);
-
-  console.log("Player registered", parsedPlayer.id);
+  ClientManager.addClient(playerId, socket.id);
+  await playerFlows.registerPlayer(playerId);
 }
 

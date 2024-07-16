@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { Socket } from 'socket.io';
 
 export function asyncMiddleware(fn: RequestHandler) {
     return (req: Request, res: Response, next: NextFunction) => {
