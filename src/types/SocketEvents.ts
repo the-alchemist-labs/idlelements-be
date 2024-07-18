@@ -4,7 +4,7 @@ export enum SocketEvent {
 }
 
 export enum SocketResponseEvent {
-    FriendRequest = "friend_request_response",
-    FriendRequestNotification = 'friend_request_notification',
+    FriendRequestReceived = 'friend_request_received',
+    FriendRequestAccepted = 'friend_request_accepted',
     Error = 'socket_error',
 }

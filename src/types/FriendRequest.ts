@@ -7,3 +7,8 @@ export const friendRequestSchema = z.object({
 });
 
 export type FriendRequest = z.infer<typeof friendRequestSchema>;
+
+export enum FriendRequestRespond {
+  Accept,
+  Reject,
+}

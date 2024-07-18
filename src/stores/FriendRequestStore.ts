@@ -2,7 +2,7 @@ import { FriendRequestModel } from "../models/FriendRequest";
 import { FriendRequest } from "../types/FriendRequest";
 
 export async function GetFriendRequestsByRecipient(playerId: string): Promise<FriendRequest[]> {
-    return FriendRequestModel.find({ recipient: playerId }).lean();
+    return FriendRequestModel.find({ recipient: playerId }, { _id: 0, __v: 0 }).lean();
 }
 
 export async function CreateFriendRequest(request: FriendRequest) {
@@ -13,7 +13,13 @@ export async function DeleteFriendRequest({ sender, recipient }: FriendRequest):
     await FriendRequestModel.deleteMany({ sender, recipient });
 }
 
-export async function isFriendRequestExists(sender: string, recipient: string): Promise<boolean> {
-    const friendRequest = FriendRequestModel.find({ recipient, sender });
+export async function IsFriendRequestExists(playerId1: string, playerId2: string): Promise<boolean> {
+    const friendRequest = await FriendRequestModel.findOne({
+        $or: [
+            { sender: playerId1, recipient: playerId2 },
+            { sender: playerId2, recipient: playerId1 }
+        ]
+    }, { _id: 0, __v: 0 }).lean();
+
     return !!friendRequest;
 }

@@ -12,7 +12,7 @@ import { players } from './routes/players';
 const app = express();
 
 const server = http.createServer(app);
-const io = new Server(server);
+export const io = new Server(server);
 
 app.use(bodyParser.json());
 

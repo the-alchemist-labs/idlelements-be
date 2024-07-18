@@ -2,7 +2,7 @@ import { PlayerModel } from "../models/Player";
 import { Player } from "../types/Player";
 
 export async function GetPlayerById(id: string): Promise<Player | null> {
-    return PlayerModel.findOne({ id: id }).lean();
+    return PlayerModel.findOne({ id: id }, { _id: 0, __v: 0 }).lean();
 }
 
 export async function GetPlayerByFriendCode(friendCode: string): Promise<Player | null> {

@@ -4,11 +4,12 @@ import { asyncMiddleware } from '../utils/middlewares';
 
 const players = Router();
 
-async function getFriendCode(req: Request, res: Response) {
-  const code = await playersFlow.getFriendCode(req.params.playerId);
-  return res.send({ code });
+async function getPlayer(req: Request, res: Response) {
+  const shouldRegister = req.query.shouldRegister === "True";
+  const player = await playersFlow.getPlayer(req.params.playerId, shouldRegister);
+  return res.send({ player });
 }
 
-players.get('/code/:playerId', asyncMiddleware(getFriendCode));
+players.get('/:playerId', asyncMiddleware(getPlayer));
 
 export { players };
