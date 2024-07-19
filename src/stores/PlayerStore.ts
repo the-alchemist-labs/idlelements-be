@@ -12,3 +12,7 @@ export async function GetPlayerByFriendCode(friendCode: string): Promise<Player 
 export async function CreatePlayer(player: Player) {
     return PlayerModel.create(player);
 }
+
+export async function UpdaterPlayer(player: Player): Promise<void> {
+    await PlayerModel.updateOne({ id: player.id }, player);
+}

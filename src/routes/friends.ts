@@ -19,14 +19,14 @@ async function sendFriendRequest(req: Request, res: Response) {
   const { fromPlayerId } = req.params;
   const { friendCode } = req.body;
   const status = await friendsFlow.sendFriendRequest(fromPlayerId, friendCode);
-  return res.send({ status });
+  return res.send(status);
 }
 
 async function handleFriendRequestRespond(req: Request, res: Response) {
   const { fromPlayerId } = req.params;
   const { requestFrom, respond } = req.body;
   const status = await friendsFlow.handleFriendRequestRespond(fromPlayerId, requestFrom, respond);
-  return res.send({ status });
+  return res.send(status);
 }
 
 friends.get('/:playerId', asyncMiddleware(getFriends));
