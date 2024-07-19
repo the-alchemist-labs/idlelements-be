@@ -8,11 +8,17 @@ import { Status, StatusResponse } from "../types/Common";
 import { Friendship } from "../types/Friendship";
 import { io } from "..";
 import { Player } from "../types/Player";
+import { PlayerInfo } from "../types/PlayerInfo";
 
-export async function getFriends(playerId: string): Promise<Player[]> {
+export async function getFriends(playerId: string): Promise<(PlayerInfo | null)[]> {
     try {
         const friendships = await FriendshipStore.GetFriends(playerId);
-        return await Promise.all(friendships.map(async f => getFriendFromFrienship(playerId, f!))) as Player[];
+        const friendIds = friendships.map(fs => getFriendId(playerId, fs!));
+        const friends = await Promise.all(friendIds.map(getPlayerInfo));
+
+        emitPlayerOnline(playerId, friendIds, true);
+
+        return friends;
 
     } catch (error) {
         console.error(`Failed to get friends for ${playerId}`);
@@ -23,7 +29,7 @@ export async function getFriends(playerId: string): Promise<Player[]> {
 export async function getPendingFriendRequests(recipient: string): Promise<(Player | null)[]> {
     try {
         const requests = await FriendRequestStore.GetFriendRequestsByRecipient(recipient);
-        const players = await Promise.all(requests.map(r => PlayersStore.GetPlayerById(r.sender)));
+        const players = await Promise.all(requests.map(r => getPlayerInfo(r.sender)));
         return players;
     } catch (error) {
         console.error(`Failed to get friends requests for ${recipient}`);
@@ -94,9 +100,28 @@ export async function handleFriendRequestRespond(fromPlayerId: string, requestFr
     }
 }
 
-async function getFriendFromFrienship(playerId: string, friendish: Friendship): Promise<Player | null> {
+
+export async function emitPlayerOffline(playerId: string) {
+    const friends = await getFriends(playerId);
+    const friendIds = friends.filter(Boolean).map(f => f!.id);
+    emitPlayerOnline(playerId, friendIds, false);
+}
+
+function getFriendId(playerId: string, friendish: Friendship): string {
     const friendId = playerId === friendish.playerId1 ? friendish.playerId2 : friendish.playerId1;
-    return PlayersStore.GetPlayerById(friendId);
+    return friendId;
+}
+
+async function getPlayerInfo(playerId: string): Promise<PlayerInfo | null> {
+    const player = await PlayersStore.GetPlayerById(playerId);
+
+    if (!player) {
+        return null;
+    }
+
+    const isOnline = !!ClientManager.getClient(playerId);
+
+    return { ...player, isOnline };
 }
 
 function formatFriendCode(code: string) {
@@ -104,4 +129,14 @@ function formatFriendCode(code: string) {
         code = code.slice(1);
     }
     return code.toUpperCase();
+}
+
+function emitPlayerOnline(playerId: string, friends: string[], isOnline: boolean) {
+    for (const friend of friends) {
+        const friendSocketId = ClientManager.getClient(friend);
+
+        if (friendSocketId) {
+            io.to(friendSocketId).emit(SocketResponseEvent.FriendOnlineStatus, { playerId, isOnline });
+        }
+    }
 }

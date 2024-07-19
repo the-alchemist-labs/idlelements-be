@@ -1,8 +1,9 @@
 
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { SocketEvent, SocketResponseEvent } from '../types/SocketEvents';
 import { ClientManager } from './clients';
 import { playerSocketConnectionSchema } from '../types/Player';
+import { emitPlayerOffline } from '../flows/friends';
 
 
 export function initializeSockets(io: Server) {
@@ -12,7 +13,9 @@ export function initializeSockets(io: Server) {
       ClientManager.addClient(playerId, socket.id);
 
       socket.on(SocketEvent.Disconnect, () => {
+        const { playerId } = playerSocketConnectionSchema.parse(socket.handshake.query);
         ClientManager.removeClient(socket.id);
+        emitPlayerOffline(playerId);
       });
 
     } catch (err) {
